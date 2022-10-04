@@ -1,0 +1,19 @@
+
+read_verilog -sv ../MODEL/SPI_MASTER/spi_master.sv
+read_verilog -sv ../MODEL/SPI_MASTER/shifter.sv
+read_verilog -sv ../MODEL/SPI_MASTER/watchdog.sv
+
+synth
+abc -g AND,OR,XOR
+opt_clean
+
+flatten 
+
+copy spi_master spi_master_rtl
+select *
+select -del spi_master_rtl
+delete
+select *
+
+write_verilog -noattr ../RTL/spi_master_rtl.sv
+

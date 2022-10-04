@@ -1,0 +1,18 @@
+read_verilog -sv ../MODEL/SPI_EXE_UNIT_1/*.sv
+
+prep -top spi_exe_unit_1
+write_json ../DOC/spi_exe_unit_1.json
+
+synth
+abc -g AND,OR,XOR
+opt_clean
+
+flatten 
+
+copy spi_exe_unit_1 spi_exe_unit_1_rtl
+select *
+select -del spi_exe_unit_1_rtl
+delete
+select *
+
+write_verilog -noattr ../RTL/spi_exe_unit_1_rtl.sv

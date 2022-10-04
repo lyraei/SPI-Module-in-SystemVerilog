@@ -1,0 +1,17 @@
+
+read_verilog -sv ../MODEL/SPI_EXE_UNIT_3/*.sv
+
+synth
+abc -g AND,OR,XOR
+opt_clean
+
+flatten 
+
+copy spi_exe_unit_3 spi_exe_unit_3_rtl
+select *
+select -del spi_exe_unit_3_rtl
+delete
+select *
+
+write_verilog -noattr ../RTL/spi_exe_unit_3_rtl.sv
+
