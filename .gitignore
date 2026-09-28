@@ -3,3 +3,4 @@ WORK/signals.gtkw
 WORK/*.log
 WORK/*.run
 WORK/waves.vcd
+DOC/*.json
