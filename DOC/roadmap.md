@@ -13,19 +13,61 @@ Etapy są uporządkowane od fundamentów do zabawek. Numery punktów w nawiasach
 ## Etap 0: porządek w nazwach
 
 - ~~Przemianować pliki, katalogi i skrypty~~: **zrobione** (`MODEL/PICORE_MASTER/picore_master.sv`, `MODEL/PICORE_SLAVE/picore_slave.sv`, `WORK/picore_*.ys`, `RTL/picore_*_rtl.sv`).
-- Przemianować to, co wymaga zmian w HDL:
+- Przemianować to, co zostało po staremu. Poniżej pełna lista, stan po przemianowaniu plików i katalogów. Wszystkie te zmiany dotykają HDL albo zależą od zmian w HDL, więc warto je zrobić jednym commitem i od razu sprawdzić `make rtl sim`.
 
-  | Obecnie | Po zmianie |
-  |---|---|
-  | moduł `spi_master` (netlista `spi_master_rtl`) | `picore_master` |
-  | moduł `spi_exe_unit_1` (netlista `spi_exe_unit_1_rtl`) | `picore_slave_alu` |
-  | sygnały `spi_*` w testbenchu | `pc_*` / `picore_*` |
-  | `TEST/test_spi_exe_unit_1.vh` (ścieżka w `testbench.sv`) | `TEST/picore_vectors.vh` |
+  **Nazwy modułów (HDL)**
 
-  Nowe nazwy modułów trzeba wpisać też w skryptach `.ys` (`copy`/`select`/`prep -top`).
+  | Gdzie | Obecnie | Proponowana nazwa |
+  |---|---|---|
+  | `MODEL/PICORE_MASTER/picore_master.sv:1` | `module spi_master` | `picore_master` |
+  | `MODEL/PICORE_SLAVE/picore_slave.sv:1` | `module spi_exe_unit_1` | `picore_slave_alu` (albo `picore_slave`) |
+  | `MODEL/PICORE_SLAVE/exe_unit_1_rtl.sv` | `module exe_unit_rtl` w pliku z numerem jednostki | moduł `picore_alu`, plik `picore_alu_rtl.sv` |
+  | `MODEL/PICORE_SLAVE/picore_slave.sv` | instancja ALU `exe1` | `alu` |
+
+  **Skrypty Yosysa**: nazwy modułów są w poleceniach, a nie tylko w ścieżkach
+
+  | Gdzie | Obecnie | Po zmianie |
+  |---|---|---|
+  | `WORK/picore_master.ys:12,14` | `copy spi_master spi_master_rtl`, `select -del spi_master_rtl` | `picore_master` / `picore_master_rtl` |
+  | `WORK/picore_slave.ys:3` | `prep -top spi_exe_unit_1` | `prep -top picore_slave_alu` |
+  | `WORK/picore_slave.ys:12,14` | `copy spi_exe_unit_1 spi_exe_unit_1_rtl`, `select -del …` | `picore_slave_alu` / `picore_slave_alu_rtl` |
+
+  Moduły w wygenerowanych netlistach (`spi_master_rtl`, `spi_exe_unit_1_rtl`) zmienią nazwę same po zmianie tych poleceń.
+
+  **Testbench (`TEST/testbench.sv`)**
+
+  | Linia | Obecnie | Po zmianie |
+  |---|---|---|
+  | 23, 31, 47 | komentarze „interfejsu SPI”, „komunikacji SPI”, „z interfejsem SPI” | „PiCoRe” |
+  | 24–25 | sygnały `spi_mosi`, `spi_miso`, `spi_sclk`, `spi_ss` | `pc_cmd`, `pc_rsp`, `pc_clk`, `pc_sel_n` (albo `picore_*`) |
+  | 32–33 | `spi_master_rtl spi_master (…)` | `picore_master_rtl master (…)` |
+  | 48–49 | `spi_exe_unit_1_rtl spi_exe_unit_1 (…)` | `picore_slave_alu_rtl slave (…)` |
+  | 96 | komentarz „Testy ukladu spi_exe_unit_1” | nazwa nowego modułu |
+  | 97 | `` `include "../TEST/test_spi_exe_unit_1.vh" `` | `` `include "../TEST/picore_vectors.vh" `` |
+
+  **Pliki**
+
+  | Obecnie | Po zmianie | Uwagi |
+  |---|---|---|
+  | `TEST/test_spi_exe_unit_1.vh` | `TEST/picore_vectors.vh` | razem z linią 97 testbencha |
+  | `MODEL/PICORE_SLAVE/exe_unit_1_rtl.sv` | `MODEL/PICORE_SLAVE/picore_alu_rtl.sv` | numer jednostki to relikt po trzech ALU |
+
+  **Porty w stylu SPI** (opcjonalnie, zależnie od decyzji o nazwach linii, patrz niżej)
+
+  | Moduł | Obecne porty | Propozycja |
+  |---|---|---|
+  | master | `o_sclk`, `o_mosi`, `i_miso`, `o_ss` | `o_pclk`, `o_cmd`, `i_rsp`, `o_sel_n` |
+  | slave | `i_sclk`, `i_mosi`, `o_miso`, `i_cs` | `i_pclk`, `i_cmd`, `o_rsp`, `i_sel_n` |
+
+  **Poza kodem**
+
+  - `.gitignore`: po przejściu na nowe nazwy usunąć linię `RTL/spi*` (zostawiona dla starych, lokalnych netlist).
+  - Dokumentacja (`README.md`, `DOC/*`): wszystkie wzmianki „moduł `spi_master`”, „`spi_exe_unit_1`”, „sygnały `spi_*`”, „`test_spi_exe_unit_1.vh`” oraz notki „nazwa sprzed zmiany” w `picore_master.md` i `picore_slave.md`. Opisy historyczne w `dziwactwa.md` §5 zostają.
+  - Nazwa repozytorium na GitHubie (`SPI-Module-in-SystemVerilog`) i opis repo („Master and Slaves modules connected via SPI interface”): patrz ostatni punkt tego etapu.
+  - Lokalny katalog klonu: `SPI-Module-in-SystemVerilog/` można przemianować dowolnie, git tego nie śledzi.
 - Nazwy linii: zostawić `SCLK/MOSI/MISO/SS` (czytelne dla każdego) albo przejść na własne, np. `PCLK`, `CMD` (master→slave), `RSP` (slave→master), `SEL_n`. Własne nazwy mówią wprost „to nie jest SPI”.
 - Wspólne `shifter`/`watchdog` przenieść do `MODEL/COMMON/` (B5), a `watchdog` przemianować na `bit_counter` (F2).
-- Zmienić nazwę repozytorium na GitHubie: Settings → General → Repository name, np. `PiCoRe`. Stare URL-e przekierowują automatycznie, a lokalnie wystarczy `git remote set-url origin https://github.com/lyraei/PiCoRe`.
+- Zmienić nazwę repozytorium na GitHubie: Settings → General → Repository name, np. `PiCoRe`, oraz opis repo (About → ⚙). Stare URL-e przekierowują automatycznie, a lokalnie wystarczy `git remote set-url origin https://github.com/lyraei/PiCoRe`.
 
 ## Etap 1: solidne fundamenty (naprawy z README)
 
