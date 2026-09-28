@@ -1,4 +1,6 @@
-# Interfejs SPI: jak działa
+# Protokół PiCoRe: jak działa
+
+**PiCoRe** (*Pipelined Command/Response*) to synchroniczny, full-duplex interfejs szeregowy. Master wysyła ramkę-polecenie i jednocześnie odbiera ramkę-odpowiedź na **poprzednie** polecenie. Nazwy linii są zapożyczone z SPI, ale timing i format ramki są własne.
 
 ## 1. Sygnały magistrali
 
@@ -10,7 +12,7 @@
 | SS / CS | master → slave | `o_ss` | `i_cs` | Wybór slave'a, aktywny stanem niskim |
 | RST | wspólny | `i_rst` | `i_rst` | Reset asynchroniczny, **aktywny stanem niskim** (mimo nazwy `i_rst`) |
 
-Slave próbkuje MOSI na narastającym zboczu, więc jest to w przybliżeniu **SPI tryb 0 (CPOL=0, CPHA=0)**. Są jednak dwie różnice względem standardu:
+Slave próbkuje MOSI na narastającym zboczu, co przypomina **tryb 0 SPI (CPOL=0, CPHA=0)**. Są jednak dwie różnice, przez które PiCoRe nie jest zgodny z urządzeniami SPI:
 
 1. Pierwszy bit nie leży na MOSI w chwili opadnięcia SS. Pojawia się dopiero po pierwszym opadającym zboczu SCLK, więc pierwsze narastające zbocze jest „puste” (patrz §4).
 2. Slave zmienia MISO na tym samym zboczu, na którym master je próbkuje. W standardzie trybu 0 slave wystawia dane na zboczu opadającym.
@@ -151,4 +153,4 @@ Flagi:
 
 Dlaczego to wszystko w ogóle działa: [dziwactwa.md](dziwactwa.md).
 
-Szczegóły i propozycje poprawek: [README, sekcja A](../README.md#a-architektura--protokół-spi).
+Szczegóły i propozycje poprawek: [README, sekcja A](../README.md#a-architektura--protokół-picore).

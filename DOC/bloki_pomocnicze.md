@@ -1,9 +1,9 @@
 # Bloki pomocnicze: `shifter` i `watchdog`
 
-Oba moduły występują w **dwóch kopiach**: w `MODEL/SPI_MASTER` i w `MODEL/SPI_EXE_UNIT_1`.
+Oba moduły występują w **dwóch kopiach**: w `MODEL/PICORE_MASTER` i w `MODEL/PICORE_SLAVE`.
 
 - Kopie `shifter.sv` są bajt w bajt identyczne.
-- `watchdog.sv` w `SPI_MASTER` różni się jedną linią: blok sekwencyjny ma tam `always_ff`, a w kopii slave'a zwykłe `always`. Funkcjonalnie kopie są równoważne.
+- `watchdog.sv` w `PICORE_MASTER` różni się jedną linią: blok sekwencyjny ma tam `always_ff`, a w kopii slave'a zwykłe `always`. Funkcjonalnie kopie są równoważne.
 
 ---
 
@@ -92,7 +92,7 @@ o_inter:   0     0     0    ...   1     0     0
 - **Slave** ładuje `K=8`, więc co 9 zboczy wczytuje 8-bitowe pole. Stąd martwe bity 19 i 10 w ramce.
 - **Master** ładuje `K=28`, więc generuje 29 zboczy SCLK.
 
-Szczegóły: [protokol_spi.md §4](protokol_spi.md#4-przebieg-jednej-ramki-zbocze-po-zboczu).
+Szczegóły: [protokol_picore.md §4](protokol_picore.md#4-przebieg-jednej-ramki-zbocze-po-zboczu).
 
 ### Użycie w projekcie
 

@@ -1,7 +1,7 @@
-read_verilog -sv ../MODEL/SPI_EXE_UNIT_1/*.sv
+read_verilog -sv ../MODEL/PICORE_SLAVE/*.sv
 
 prep -top spi_exe_unit_1
-write_json ../DOC/spi_exe_unit_1.json
+write_json ../DOC/picore_slave.json
 
 synth
 abc -g AND,OR,XOR
@@ -15,4 +15,4 @@ select -del spi_exe_unit_1_rtl
 delete
 select *
 
-write_verilog -noattr ../RTL/spi_exe_unit_1_rtl.sv
+write_verilog -noattr ../RTL/picore_slave_rtl.sv
