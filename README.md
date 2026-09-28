@@ -2,6 +2,8 @@
 
 Master SPI komunikujący się z trzema slave'ami. Każdy slave to jednostka wykonawcza (ALU, `exe_unit`), która przyjmuje w ramce dwa argumenty i kod operacji, a wynik z flagami odsyła w **następnej** ramce. Moduły opisane są w SystemVerilogu, syntezowane Yosysem do netlisty bramek AND/OR/XOR, a netlisty symulowane są w Icarus Verilog.
 
+**Pełna dokumentacja: [`DOC/`](DOC/README.md)**. Zawiera opis każdego pliku, działanie interfejsu SPI zbocze po zboczu i kompletne tabele operacji oraz flag wszystkich trzech ALU.
+
 ## Struktura
 
 | Ścieżka | Zawartość |
@@ -42,7 +44,7 @@ Kolejność flag jest inna w każdej jednostce:
 ## Uruchomienie
 
 ```bash
-mkdir -p DOC RTL        # wymagane, patrz B1
+mkdir -p RTL            # na wypadek, gdyby checkout pominął pusty katalog
 cd WORK
 make rtl                # synteza Yosysem -> ../RTL/*_rtl.sv
 make sim                # iverilog + uruchomienie
@@ -106,6 +108,7 @@ Pierwsza ramka po resecie oraz pierwsza ramka po zmianie slave'a zwracają wynik
 **B1 [P0] Brakujący katalog `DOC/` wywala `make rtl`.**
 `spi_slave_1.ys` wykonuje `write_json ../DOC/spi_exe_unit_1.json` i kończy się błędem `Can't open output file`. Pozostałe slave'y nie mają tego kroku, co jest niespójne.
 - Naprawa: dodać `DOC/.gitkeep` albo `mkdir -p ../DOC ../RTL` w Makefile, ewentualnie usunąć `write_json`.
+- **Status:** obejście działa, bo katalog `DOC/` istnieje teraz w repozytorium razem z dokumentacją. Właściwa poprawka (`mkdir` w Makefile) nadal jest do zrobienia.
 
 **B2 [P0] `make sim` nie zależy od `rtl`.**
 `RTL/` jest w `.gitignore`, więc na świeżym klonie `make sim` nie ma czego kompilować.
