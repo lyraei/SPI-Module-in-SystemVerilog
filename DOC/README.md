@@ -14,6 +14,7 @@ Pierwotnie w projekcie były trzy slave'y z trzema różnymi ALU napisanymi prze
 | [exe_unit_alu.md](exe_unit_alu.md) | `MODEL/PICORE_SLAVE/exe_unit_1_rtl.sv`: pełna tabela operacji i flag ALU (odtworzona z netlisty) |
 | [bloki_pomocnicze.md](bloki_pomocnicze.md) | `shifter.sv` i `watchdog.sv`: rejestr przesuwny i licznik |
 | [synteza_i_symulacja.md](synteza_i_symulacja.md) | `WORK/makefile`, skrypty Yosysa `*.ys`, `TEST/testbench.sv`, wektory `*.vh` |
+| [spec_v2.md](spec_v2.md) | **Przestrzeń projektowa PiCoRe v2**: wszystkie poprawki i pomysły na nowy protokół jako możliwości, z zależnościami i otwartymi decyzjami |
 | [roadmap.md](roadmap.md) | **Plany rozwoju PiCoRe**: naprawy, rozszerzenia protokołu, pomysły hobbystyczne |
 | [dziwactwa.md](dziwactwa.md) | **Nietypowe rozwiązania i dziwactwa**: dlaczego układ działa, choć wygląda, jakby nie powinien |
 

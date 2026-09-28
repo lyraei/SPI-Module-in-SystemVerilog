@@ -102,7 +102,7 @@ Obecny „protokół” to ALU przyklejone do rejestru przesuwnego. Wersja 1 pow
 - **STATUS** zawiera co najmniej: `VALID` (odpowiedź niesie dane), `ERR_CMD` (nieznane polecenie), `ERR_CRC` (polecenie przyszło uszkodzone) i `BUSY` (wynik jeszcze się liczy).
 - **Polecenie `NOP`** wypycha ostatnią odpowiedź z potoku bez zlecania nowej pracy.
 - **Prawdziwe CRC-8** (np. wielomian 0x07) zamiast obecnego „CRC”, które jest tylko obciętym iloczynem wielomianów. Ironia do naprawienia.
-- Protokół warto spisać jako osobny `DOC/spec_v1.md`, z przebiegami w [WaveDrom](https://wavedrom.com/).
+- Protokół warto spisać jako osobną specyfikację, z przebiegami w [WaveDrom](https://wavedrom.com/). Warianty do wyboru zbiera [spec_v2.md](spec_v2.md).
 
 ## Etap 3: slave jako urządzenie z rejestrami
 
