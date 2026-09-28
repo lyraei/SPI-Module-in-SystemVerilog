@@ -7,7 +7,7 @@
 | SCLK | master → slave | `o_sclk` | `i_sclk` | Zegar transmisji. W spoczynku `0` (CPOL=0). Okres = 2 × okres `i_clk` |
 | MOSI | master → slave | `o_mosi` | `i_mosi` | Dane do slave'a, MSB first. Zmieniane na **opadającym** zboczu SCLK |
 | MISO | slave → master | `i_miso` | `o_miso` | Dane do mastera, MSB first. Slave zmienia je na **narastającym** zboczu SCLK |
-| SS / CS | master → slave | `o_ss` | `i_cs` | Wybór slave'a, aktywny stanem niskim. Jedna linia dla wszystkich slave'ów |
+| SS / CS | master → slave | `o_ss` | `i_cs` | Wybór slave'a, aktywny stanem niskim |
 | RST | wspólny | `i_rst` | `i_rst` | Reset asynchroniczny, **aktywny stanem niskim** (mimo nazwy `i_rst`) |
 
 Slave próbkuje MOSI na narastającym zboczu, więc jest to w przybliżeniu **SPI tryb 0 (CPOL=0, CPHA=0)**. Są jednak dwie różnice względem standardu:
@@ -53,7 +53,7 @@ Ramka ma zawsze **28 bitów**, wysyłanych od bitu 27 (MSB).
 ```
 
 - `wynik = o_data[27:20]`, `flaga[i] = o_data[16+i]`, `o_data[15:0] = 0`.
-- Znaczenie flag zależy od jednostki: [exe_unit_alu.md](exe_unit_alu.md#flagi).
+- Znaczenie flag: F0 = `R[7]`, F1 = `R==0xFF`, F2 = parzysta liczba jedynek, F3 = R one-hot ([exe_unit_alu.md](exe_unit_alu.md#flagi)).
 
 ## 4. Przebieg jednej ramki zbocze po zboczu
 
@@ -121,26 +121,34 @@ ramka k+1 : MOSI = {A_k+1, ...}          MISO = wynik(A_k, B_k, OP_k)
 Wynik jest obliczany i ładowany do rejestru wyjściowego na ostatnim (29.) zboczu ramki k, a wysuwany w ramce k+1. Konsekwencje:
 
 - Pierwsza ramka po resecie zwraca same zera, łącznie z flagami, bo `shift_out` jest zerowany resetem.
-- Wszystkie slave'y słyszą każdą ramkę. Po przełączeniu `select_slave` pierwsza odpowiedź nowego slave'a to jego wynik dla **ostatniej ramki wysłanej do poprzedniego slave'a** (dlatego pierwszy wektor jednostki 3 jest błędny, patrz [synteza_i_symulacja.md](synteza_i_symulacja.md#znany-błąd-wektora)).
 - Aby odczytać wynik ostatniej operacji, trzeba wysłać jeszcze jedną ramkę, np. same zera.
 
 ## 6. Przykład
 
-Jednostka 2, operacja `0` (A+B), A=5, B=3:
+Operacja `0` (A−B), A=5, B=3:
 
 ```
 ramka k   MOSI: 00000101 0 00000011 0 0000 000000   = 28'h0501800
 ramka k+1 MOSI: (cokolwiek, np. następne polecenie)
-          MISO: 00001000 0010 0000000000000000       wynik = 8, flagi = 0010
+          MISO: 00000010 1000 0000000000000000       wynik = 2, flagi F3..F0 = 1000
 ```
 
-Flagi jednostki 2: `F0=VF` (przeniesienie) = 0, `F1=BF` (wynik ma dokładnie jedną jedynkę: 8 = 0b00001000) = 1, `F2=SF` (bit 7) = 0, `F3=OF` (wynik = 0xFF) = 0.
+Flagi:
+
+| Flaga | Port | Wartość | Dlaczego |
+|---|---|---|---|
+| F0 | `SF` | 0 | bit 7 wyniku = 0 |
+| F1 | `OF` | 0 | wynik ≠ 0xFF |
+| F2 | `NF` | 0 | wynik 2 = 0b00000010 ma nieparzystą liczbę jedynek |
+| F3 | `BF` | 1 | wynik ma dokładnie jedną jedynkę |
 
 ## 7. Ograniczenia interfejsu (skrót)
 
-- Jedna linia SS dla wszystkich slave'ów, a MISO nie jest trójstanowe. Wielu slave'ów obsługuje tylko multiplekser w testbenchu.
+- Master nie obsługuje wielu slave'ów (jedno SS), a MISO slave'a nie jest trójstanowe.
 - Slave nie resetuje się przy podniesieniu SS. Przerwana ramka rozsynchronizowuje go aż do resetu.
 - SCLK powstaje kombinacyjnie ze stanu FSM (ryzyko glitchy), a MISO jest zmieniane i próbkowane na tym samym zboczu.
-- Długość ramki (28) i format pól są na sztywno w kodzie slave'ów.
+- Długość ramki (28) i format pól są na sztywno w kodzie slave'a.
+
+Dlaczego to wszystko w ogóle działa: [dziwactwa.md](dziwactwa.md).
 
 Szczegóły i propozycje poprawek: [README, sekcja A](../README.md#a-architektura--protokół-spi).
