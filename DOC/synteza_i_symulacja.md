@@ -108,7 +108,7 @@ Kolejność w czasie dla jednego wektora:
 4. Po ramce, na ↓`clk` (busy=0, send_request=0), `received_data` jest porównywane z `expected_data` **tego samego** wektora.
 5. Na kolejnym ↑`clk` `next_data` budzi blok `initial`, który wystawia kolejny wektor.
 
-Porównanie w kroku 4 dotyczy odpowiedzi MISO, czyli wyniku operacji z **poprzedniej** ramki. Dlatego w pliku `.vh` `expected_data[k]` = wynik dla `send_data[k−1]` (patrz [protokol_spi.md §5](protokol_spi.md#5-potok-wynik-przychodzi-w-następnej-ramce)).
+Porównanie w kroku 4 dotyczy odpowiedzi MISO, czyli wyniku operacji z **poprzedniej** ramki. Dlatego w pliku `.vh` `expected_data[k]` = wynik dla `send_data[k−1]` (patrz [protokol_picore.md §5](protokol_picore.md#5-potok-wynik-przychodzi-w-następnej-ramce)).
 
 ### Przebieg testu
 

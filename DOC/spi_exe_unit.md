@@ -1,4 +1,6 @@
-# `spi_exe_unit_1`: slave SPI z ALU
+# `spi_exe_unit_1`: slave PiCoRe z ALU
+
+> Nazwa modułu (`spi_exe_unit_1`) i katalogu (`SPI_EXE_UNIT_1`) pochodzi sprzed zmiany nazwy projektu na PiCoRe.
 
 Plik: `MODEL/SPI_EXE_UNIT_1/spi_exe_unit_1.sv` (171 linii). Katalog zawiera też netlistę ALU (`exe_unit_1_rtl.sv`) oraz własne kopie `shifter.sv` i `watchdog.sv`.
 
@@ -101,7 +103,7 @@ Stan `i_cs` poza `READY` jest ignorowany.
 
 ## Przebieg ramki w slave'ie
 
-Szczegółowa tabela zbocze po zboczu jest w [protokol_spi.md §4.3](protokol_spi.md#43-slave-co-dzieje-się-na-każdym-zboczu-). W skrócie:
+Szczegółowa tabela zbocze po zboczu jest w [protokol_picore.md §4.3](protokol_picore.md#43-slave-co-dzieje-się-na-każdym-zboczu-). W skrócie:
 
 1. ↑#1: CS aktywny → `LOAD_A`, licznik ← 8.
 2. ↑#2 … ↑#9: 8 bitów A. ↑#10: zapis A (bit d19 tracony).
@@ -112,7 +114,7 @@ Szczegółowa tabela zbocze po zboczu jest w [protokol_spi.md §4.3](protokol_sp
 
 ## Mapowanie flag ALU na bity odpowiedzi
 
-`s_flags[i]` trafia na bit `16+i` słowa MISO (patrz [protokol_spi.md §3](protokol_spi.md#miso-odpowiedź-wynik-poprzedniej-ramki)).
+`s_flags[i]` trafia na bit `16+i` słowa MISO (patrz [protokol_picore.md §3](protokol_picore.md#miso-odpowiedź-wynik-poprzedniej-ramki)).
 
 | Bit | Port ALU | Znaczenie |
 |---|---|---|

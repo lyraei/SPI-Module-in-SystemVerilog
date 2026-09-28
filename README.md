@@ -1,20 +1,25 @@
-# SPI Module in SystemVerilog
+# PiCoRe — a pipelined command/response serial link
 
-Master SPI komunikujący się ze slave'em, który jest jednostką wykonawczą (ALU, `exe_unit`). Slave przyjmuje w ramce dwa argumenty i kod operacji, a wynik z flagami odsyła w **następnej** ramce. Moduły opisane są w SystemVerilogu, syntezowane Yosysem do netlisty bramek AND/OR/XOR, a netlisty symulowane są w Icarus Verilog.
+**PiCoRe** (*Pipelined Command/Response*) to synchroniczny, 4-przewodowy, full-duplex interfejs szeregowy z ramką stałej długości, napisany w SystemVerilogu. Master wysyła polecenie, a odpowiedź na nie przychodzi w **następnej** ramce, czyli z opóźnieniem jednej ramki (stąd *pipelined*). Linie nazywają się jak w SPI (SCLK, MOSI, MISO, SS), ale PiCoRe **nie jest zgodny ze standardem SPI**: ma inny timing, własny format ramki i semantykę komenda–odpowiedź.
+
+Po drugiej stronie łącza siedzi jednostka wykonawcza (ALU, `exe_unit`). Slave przyjmuje w ramce dwa argumenty i kod operacji, a wynik z flagami odsyła w **następnej** ramce. Moduły opisane są w SystemVerilogu, syntezowane Yosysem do netlisty bramek AND/OR/XOR, a netlisty symulowane są w Icarus Verilog.
 
 Pierwotnie projekt miał trzy slave'y z trzema różnymi ALU (od trzech autorów). Zostawiona jest tylko **jednostka 1**, a jednostki 2 i 3 zostały usunięte.
 
+Identyfikatory w kodzie (`spi_master`, `SPI_MASTER/`, `spi_exe_unit_1`, `spi_slave_1.ys`) oraz nazwa repozytorium pochodzą sprzed zmiany nazwy na PiCoRe. Ich przemianowanie to pierwszy krok w [roadmapie](DOC/roadmap.md).
+
 **Pełna dokumentacja: [`DOC/`](DOC/README.md)**. Zawiera:
 - opis każdego pliku;
-- działanie interfejsu SPI zbocze po zboczu;
+- działanie interfejsu PiCoRe zbocze po zboczu;
 - tabelę operacji i flag ALU;
-- [opis dziwactw projektu](DOC/dziwactwa.md).
+- [opis dziwactw projektu](DOC/dziwactwa.md);
+- [plany rozwoju](DOC/roadmap.md).
 
 ## Struktura
 
 | Ścieżka | Zawartość |
 |---|---|
-| `MODEL/SPI_MASTER/spi_master.sv` | Master SPI: FSM `READY→SS→LOAD→LOW⇄HIGH→END`, SCLK = `i_clk`/2, ramka 28 bitów, MSB first |
+| `MODEL/SPI_MASTER/spi_master.sv` | Master PiCoRe: FSM `READY→SS→LOAD→LOW⇄HIGH→END`, SCLK = `i_clk`/2, ramka 28 bitów, MSB first |
 | `MODEL/SPI_EXE_UNIT_1/spi_exe_unit_1.sv` | Slave: FSM `READY→LOAD_A→LOAD_B→LOAD_OPER→STORE_RESULT` + ALU |
 | `MODEL/SPI_EXE_UNIT_1/exe_unit_1_rtl.sv` | Gotowa netlista ALU wygenerowana przez Yosysa (bez źródeł behawioralnych) |
 | `MODEL/*/shifter.sv` | Rejestr przesuwny z wpisem równoległym (2 identyczne kopie) |
@@ -75,7 +80,7 @@ Jeśli w `RTL/` zostały netlisty `spi_exe_unit_2_rtl.sv` / `spi_exe_unit_3_rtl.
 
 Priorytety: **[P0]** psuje build albo test, **[P1]** błąd projektowy lub funkcjonalny, **[P2]** jakość i utrzymanie. Punkty, które zniknęły po usunięciu jednostek 2 i 3, są oznaczone jako **nieaktualne**.
 
-## A. Architektura / protokół SPI
+## A. Architektura / protokół PiCoRe
 
 **A1 [P2] Brak wyboru slave'a.**
 Master ma jedno `o_ss`, a parametr `SLAVES_NUMBER = 3` jest nieużywany. Przy jednym slave'ie nie ma to znaczenia, ale dołożenie kolejnych wymaga zmian.
@@ -106,10 +111,10 @@ Slave przesuwa `shift_out` na `posedge sclk`, a master próbkuje `i_miso` równi
 - Naprawa: nieaktywny CS ma zerować FSM, licznik i shifter.
 
 **A8 [P2] Wynik wraca z opóźnieniem jednej ramki.**
-Jest to udokumentowane w `DOC/protokol_spi.md`, ale protokół tego nie sygnalizuje. Pierwsza ramka po resecie zwraca zera.
+Jest to udokumentowane w `DOC/protokol_picore.md`, ale protokół tego nie sygnalizuje. Pierwsza ramka po resecie zwraca zera.
 - Naprawa: bit „valid” w odpowiedzi albo ramka typu NOP/READ.
 
-**A9 [P2] Brak parametryzacji trybu SPI (CPOL/CPHA), kolejności bitów i długości ramki.**
+**A9 [P2] Brak parametryzacji trybu zegara (CPOL/CPHA), kolejności bitów i długości ramki.**
 
 ## B. Build / skrypty
 
@@ -153,7 +158,7 @@ W repo jest tylko netlista. Tabela operacji odtworzona z netlisty znajduje się 
 Naprawa: jeden proces sterujący (task `spi_transfer(data, expected)`), przypisania nieblokujące.
 
 **C3 [P2] Model odniesienia zamiast twardo zakodowanych wektorów.**
-Wektory pochodzą z tej samej netlisty ALU, więc test sprawdza transport SPI, a nie poprawność ALU (patrz [DOC/dziwactwa.md §8](DOC/dziwactwa.md#8-weryfikacja-co-naprawdę-jest-testowane)).
+Wektory pochodzą z tej samej netlisty ALU, więc test sprawdza transport PiCoRe, a nie poprawność ALU (patrz [DOC/dziwactwa.md §8](DOC/dziwactwa.md#8-weryfikacja-co-naprawdę-jest-testowane)).
 - Naprawa: behawioralny model ALU w TB, losowanie argumentów, `expected_data` liczone w locie z opóźnieniem jednej ramki.
 
 **C4 [P2] Drobne rzeczy w TB:**
@@ -231,6 +236,6 @@ Warto to udokumentować albo reagować na zbocze.
 
 1. B1, B2, D1: pewny build na świeżym klonie.
 2. D2, D3, B5: brak latchy i wspólna kompilacja modeli.
-3. A6, A5, A4, A3: poprawny tryb SPI 0 i zwarta ramka, z przeliczeniem wektorów (najlepiej od razu C3).
+3. A6, A5, A4, A3: czysty timing (jak w trybie 0 SPI) i zwarta ramka, z przeliczeniem wektorów (najlepiej od razu C3).
 4. A7, potem ewentualnie A1 i A2, jeśli wróci multi-slave.
 5. Pozostałe P2.

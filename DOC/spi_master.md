@@ -1,4 +1,6 @@
-# `spi_master`: master SPI
+# `spi_master`: master PiCoRe
+
+> Nazwa modułu (`spi_master`) i katalogu (`SPI_MASTER`) pochodzi sprzed zmiany nazwy projektu na PiCoRe.
 
 Plik: `MODEL/SPI_MASTER/spi_master.sv` (152 linie). Używa modułów `shifter` i `watchdog` z tego samego katalogu.
 
@@ -103,7 +105,7 @@ Uwagi:
 
 - Wpis równoległy (`sout_wrt`) i ładowanie licznika (`watchdog_we`) mają skutek tylko w `LOAD`, bo tylko wtedy pojawia się zbocze ↑ SCLK. Ustawienie ich w `SS` nic nie robi.
 - `s_sin_en` i `s_sin_wrt` są zadeklarowane i zerowane, ale nigdzie nie używane (pozostałość po osobnym rejestrze wejściowym).
-- Licznik jest ładowany wartością 28 na ↑#1 (`LOAD`) i dekrementowany na ↑#2 … ↑#29, więc `s_inter=1` pojawia się po ↑#29. Stąd 29 impulsów SCLK na ramkę (szczegóły: [protokol_spi.md §4](protokol_spi.md#4-przebieg-jednej-ramki-zbocze-po-zboczu)).
+- Licznik jest ładowany wartością 28 na ↑#1 (`LOAD`) i dekrementowany na ↑#2 … ↑#29, więc `s_inter=1` pojawia się po ↑#29. Stąd 29 impulsów SCLK na ramkę (szczegóły: [protokol_picore.md §4](protokol_picore.md#4-przebieg-jednej-ramki-zbocze-po-zboczu)).
 
 ## Ścieżka nadawcza (MOSI)
 

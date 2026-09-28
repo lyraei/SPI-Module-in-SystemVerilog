@@ -57,7 +57,7 @@ Master nie ma osobnego bufora odbiorczego:
 - bity wchodzą na LSB (z MISO);
 - po ramce wysłane słowo jest całkowicie wypchnięte, a odebrane leży na jego miejscu.
 
-Dlatego `o_data` to po prostu `s_shifter`, a w trakcie transmisji jest mieszanką obu słów. To klasyczny trik full-duplex SPI. Sygnały `s_sin_en`/`s_sin_wrt` to pozostałość po wersji z osobnym rejestrem wejściowym, z której zrezygnowano.
+Dlatego `o_data` to po prostu `s_shifter`, a w trakcie transmisji jest mieszanką obu słów. To klasyczny trik full-duplex, znany z SPI. Sygnały `s_sin_en`/`s_sin_wrt` to pozostałość po wersji z osobnym rejestrem wejściowym, z której zrezygnowano.
 
 ---
 
@@ -75,16 +75,17 @@ ramka k+1 : MOSI = polecenie k+1    MISO = wynik polecenia k
 
 ---
 
-## 5. Ślady architektury z trzema slave'ami
+## 5. Ślady architektury z trzema slave'ami i nazwy „SPI”
 
 Projekt powstał jako magistrala z trzema slave'ami i trzema różnymi ALU, pisanymi przez trzech autorów. Zostawiono tylko jednostkę 1, ale ślady zostały:
 
 - **Master ma parametr `SLAVES_NUMBER = 3`, nieużywany.** Wyjście SS zawsze było tylko jedno.
-- **„Multi-slave” był broadcastem.** Wszystkie trzy slave'y dzieliły jedno SS, słyszały każdą ramkę i każdy liczył każde polecenie swoim ALU. Wybór odbywał się multiplekserem MISO w testbenchu, więc SPI multi-slave było tu tylko z nazwy.
+- **„Multi-slave” był broadcastem.** Wszystkie trzy slave'y dzieliły jedno SS, słyszały każdą ramkę i każdy liczył każde polecenie swoim ALU. Wybór odbywał się multiplekserem MISO w testbenchu, więc multi-slave było tu tylko z nazwy.
 - **Skutek broadcastu:** pierwsza odpowiedź po przełączeniu slave'a była jego wynikiem dla ostatniego polecenia wysłanego do poprzedniego slave'a. Wektory jednostki 2 to przewidywały, a wektory jednostki 3 nie. Stąd jedyny błędny transfer w starej symulacji (2610/2611).
 - **Nazwy zostały po trzech jednostkach:** `SPI_EXE_UNIT_1`, `spi_exe_unit_1`, `spi_slave_1.ys`, `test_spi_exe_unit_1.vh`, instancja `exe1`.
 - **Plik ALU nazywa się inaczej niż moduł:** `exe_unit_1_rtl.sv` zawiera moduł `exe_unit_rtl`. Ta sama nazwa modułu była też w jednostce 3, więc nie dało się ich skompilować razem.
-- **Każda netlista ALU pochodziła z innej wersji Yosysa** (0.10, 0.12, 0.13) i miała inne nazewnictwo, raz polskie (`zliczanie0`, `U1naU2`), raz angielskie (`zero_counter`, `sign_to_u2`). Projekt był więc ćwiczeniem z integracji cudzych bloków, a SPI było spoiwem.
+- **Każda netlista ALU pochodziła z innej wersji Yosysa** (0.10, 0.12, 0.13) i miała inne nazewnictwo, raz polskie (`zliczanie0`, `U1naU2`), raz angielskie (`zero_counter`, `sign_to_u2`). Projekt był więc ćwiczeniem z integracji cudzych bloków, a interfejs szeregowy był spoiwem.
+- **Interfejs nazywał się „SPI”, choć nim nie jest.** Pożyczył tylko nazwy linii i ogólny kształt: CPOL=0, MSB first, rejestry przesuwne. Przy 29 zboczach na 28 bitów, pustym pierwszym zboczu i MISO zmienianym na zboczu próbkowania żadne prawdziwe urządzenie SPI by się z nim nie dogadało. Stąd zmiana nazwy na **PiCoRe**. Identyfikatory w kodzie (`spi_master`, `SPI_MASTER/`, `spi_exe_unit_1`, `spi_slave_1.ys`, sygnały `spi_*` w testbenchu) i nazwa repozytorium to relikty sprzed tej zmiany.
 
 ---
 

@@ -92,7 +92,7 @@ o_inter:   0     0     0    ...   1     0     0
 - **Slave** ładuje `K=8`, więc co 9 zboczy wczytuje 8-bitowe pole. Stąd martwe bity 19 i 10 w ramce.
 - **Master** ładuje `K=28`, więc generuje 29 zboczy SCLK.
 
-Szczegóły: [protokol_spi.md §4](protokol_spi.md#4-przebieg-jednej-ramki-zbocze-po-zboczu).
+Szczegóły: [protokol_picore.md §4](protokol_picore.md#4-przebieg-jednej-ramki-zbocze-po-zboczu).
 
 ### Użycie w projekcie
 
