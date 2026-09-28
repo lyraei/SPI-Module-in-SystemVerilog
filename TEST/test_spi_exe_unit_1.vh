@@ -1,4 +1,3 @@
-select_slave = 0;
 send_request = 1;
 
 send_data = 28'b0000000000000000000000000000;

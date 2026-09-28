@@ -1,12 +1,6 @@
-# `spi_exe_unit_N`: slave SPI z ALU
+# `spi_exe_unit_1`: slave SPI z ALU
 
-Pliki:
-
-- `MODEL/SPI_EXE_UNIT_1/spi_exe_unit_1.sv` (171 linii)
-- `MODEL/SPI_EXE_UNIT_2/spi_exe_unit_2.sv` (172 linie)
-- `MODEL/SPI_EXE_UNIT_3/spi_exe_unit_3.sv` (176 linii)
-
-Trzy moduły są niemal identyczne. Różnią się tylko instancją ALU, mapowaniem flag i drobiazgami opisanymi w [tabeli różnic](#różnice-między-jednostkami). Każdy katalog zawiera też własną kopię `shifter.sv` i `watchdog.sv`.
+Plik: `MODEL/SPI_EXE_UNIT_1/spi_exe_unit_1.sv` (171 linii). Katalog zawiera też netlistę ALU (`exe_unit_1_rtl.sv`) oraz własne kopie `shifter.sv` i `watchdog.sv`.
 
 ## Parametry
 
@@ -38,7 +32,7 @@ Trzy moduły są niemal identyczne. Różnią się tylko instancją ALU, mapowan
                                      │  argB_enable─┘              │ [7:4]
                                      ▼              ▼              ▼
                                ┌───────────────────────────────────────┐
-                               │   exe_unit_rtl / exe_unit_rtl_2 (ALU) │  (kombinacyjne)
+                               │   exe_unit_rtl (ALU)                  │  (kombinacyjne)
                                └───────────┬──────────────┬────────────┘
                                  s_result_next[7:0]  s_flags_next[3:0]
                                            ▼              ▼
@@ -58,7 +52,7 @@ Trzy moduły są niemal identyczne. Różnią się tylko instancją ALU, mapowan
 
 | Instancja | Moduł | Połączenia |
 |---|---|---|
-| `exe1` / `exe2` / `exe3` | ALU (netlista) | `i_argA=s_argA`, `i_argB=s_argB`, `i_oper=s_oper[7:4]`, `o_result=s_result_next`, flagi → `s_flags_next[3:0]` |
+| `exe1` | `exe_unit_rtl` (netlista ALU) | `i_argA=s_argA`, `i_argB=s_argB`, `i_oper=s_oper[7:4]`, `o_result=s_result_next`, flagi → `s_flags_next[3:0]` |
 | `shift_in` | `shifter #(.N(8))` | `i_bit=i_mosi`, `i_en=s_en_in`, `i_wrt=s_wrt_in` (zawsze 0), `o_data=s_data_next`. **`i_data` i `o_bit` niepodłączone** |
 | `shift_out` | `shifter #(.N(28))` | `i_data={s_result, s_flags, 16'b0}`, `i_en=s_en_out`, `i_wrt=s_wrt_out`, `o_bit=o_miso`. **`i_bit` niepodłączone** |
 | `counter` | `watchdog #(.N(4))` | `i_cycles=s_cycles`, `i_we=s_we`, `o_inter=s_inter` |
@@ -72,7 +66,7 @@ Trzy moduły są niemal identyczne. Różnią się tylko instancją ALU, mapowan
 | `regB` | `s_argB[7:0]` | `argB_enable` | `s_argB_next` |
 | `regOper` | `s_oper[7:0]` | `oper_enable` | `s_oper_next`. Do ALU idą tylko bity `[7:4]` |
 
-`s_result`, `s_flags`, `s_argA_next`, `s_argB_next` i `s_oper_next` są przypisywane w `always @(*)` tylko w niektórych stanach, więc Yosys **syntezuje z nich latche** (5 na moduł).
+`s_result`, `s_flags`, `s_argA_next`, `s_argB_next` i `s_oper_next` są przypisywane w `always @(*)` tylko w niektórych stanach, więc Yosys **syntezuje z nich 5 latchy**.
 
 ## Maszyna stanów
 
@@ -120,30 +114,23 @@ Szczegółowa tabela zbocze po zboczu jest w [protokol_spi.md §4.3](protokol_sp
 
 `s_flags[i]` trafia na bit `16+i` słowa MISO (patrz [protokol_spi.md §3](protokol_spi.md#miso-odpowiedź-wynik-poprzedniej-ramki)).
 
-| Bit | Jednostka 1 | Jednostka 2 | Jednostka 3 |
-|---|---|---|---|
-| `s_flags[0]` | `o_SF` | `o_VF` | `o_OF` |
-| `s_flags[1]` | `o_OF` | `o_BF` | `o_SF` |
-| `s_flags[2]` | `o_NF` | `o_SF` | `o_ZF` |
-| `s_flags[3]` | `o_BF` | `o_OF` | `o_PF` |
+| Bit | Port ALU | Znaczenie |
+|---|---|---|
+| `s_flags[0]` | `o_SF` | `R[7]` |
+| `s_flags[1]` | `o_OF` | `R == 0xFF` |
+| `s_flags[2]` | `o_NF` | parzysta liczba jedynek w R |
+| `s_flags[3]` | `o_BF` | R one-hot |
 
-Rzeczywiste znaczenie flag (często inne niż sugeruje nazwa): [exe_unit_alu.md](exe_unit_alu.md#flagi).
+Szczegóły: [exe_unit_alu.md](exe_unit_alu.md#flagi).
 
-## Różnice między jednostkami
+## Drobiazgi
 
-| | Jednostka 1 | Jednostka 2 | Jednostka 3 |
-|---|---|---|---|
-| Moduł ALU | `exe_unit_rtl` (plik `exe_unit_1_rtl.sv`) | `exe_unit_rtl_2` | `exe_unit_rtl` (plik `exe_unit_rtl.sv`) |
-| Instancja | `exe1` | `exe2` | `exe3` |
-| Deklaracja `result_enable` | **brak** (niejawny net, ostrzeżenie Yosysa) | jest | jest |
-| `s_oper_next[3:0] = '0` | nie | tak (w wartościach domyślnych i w `LOAD_OPER`) | nie |
-| Wiersz `prep` + `write_json` w skrypcie syntezy | tak | nie | nie |
-
-Sygnał `result_enable` jest wszędzie ustawiany na `0` i nigdzie nie czytany.
+- Sygnał `result_enable` nie jest zadeklarowany (Yosys tworzy niejawny net i ostrzega). Jest ustawiany na `0` i nigdzie nie czytany.
+- Skrypt syntezy tego modułu jako jedyny eksportuje hierarchię do `DOC/spi_exe_unit_1.json` (`prep` + `write_json`).
 
 ## Znane problemy
 
-README: A1–A3, A5, A7, D1–D6. Najważniejsze:
+README: A2, A3, A5, A7, D1–D5. Najważniejsze:
 
 - latche;
 - brak resynchronizacji na CS;
