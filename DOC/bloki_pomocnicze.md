@@ -1,9 +1,9 @@
 # Bloki pomocnicze: `shifter` i `watchdog`
 
-Oba moduły występują w **dwóch kopiach**: w `MODEL/SPI_MASTER` i w `MODEL/SPI_EXE_UNIT_1`.
+Oba moduły występują w **dwóch kopiach**: w `MODEL/PICORE_MASTER` i w `MODEL/PICORE_SLAVE`.
 
 - Kopie `shifter.sv` są bajt w bajt identyczne.
-- `watchdog.sv` w `SPI_MASTER` różni się jedną linią: blok sekwencyjny ma tam `always_ff`, a w kopii slave'a zwykłe `always`. Funkcjonalnie kopie są równoważne.
+- `watchdog.sv` w `PICORE_MASTER` różni się jedną linią: blok sekwencyjny ma tam `always_ff`, a w kopii slave'a zwykłe `always`. Funkcjonalnie kopie są równoważne.
 
 ---
 

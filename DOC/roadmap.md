@@ -12,20 +12,20 @@ Etapy są uporządkowane od fundamentów do zabawek. Numery punktów w nawiasach
 
 ## Etap 0: porządek w nazwach
 
-- Przemianować moduły i pliki:
+- ~~Przemianować pliki, katalogi i skrypty~~: **zrobione** (`MODEL/PICORE_MASTER/picore_master.sv`, `MODEL/PICORE_SLAVE/picore_slave.sv`, `WORK/picore_*.ys`, `RTL/picore_*_rtl.sv`).
+- Przemianować to, co wymaga zmian w HDL:
 
   | Obecnie | Po zmianie |
   |---|---|
-  | `spi_master` | `picore_master` |
-  | `spi_exe_unit_1` | `picore_slave_alu` |
-  | `SPI_MASTER/` | `MODEL/MASTER/` |
-  | `SPI_EXE_UNIT_1/` | `MODEL/SLAVE/` |
-  | `spi_slave_1.ys` | `picore_slave.ys` |
+  | moduł `spi_master` (netlista `spi_master_rtl`) | `picore_master` |
+  | moduł `spi_exe_unit_1` (netlista `spi_exe_unit_1_rtl`) | `picore_slave_alu` |
   | sygnały `spi_*` w testbenchu | `pc_*` / `picore_*` |
+  | `TEST/test_spi_exe_unit_1.vh` (ścieżka w `testbench.sv`) | `TEST/picore_vectors.vh` |
 
+  Nowe nazwy modułów trzeba wpisać też w skryptach `.ys` (`copy`/`select`/`prep -top`).
 - Nazwy linii: zostawić `SCLK/MOSI/MISO/SS` (czytelne dla każdego) albo przejść na własne, np. `PCLK`, `CMD` (master→slave), `RSP` (slave→master), `SEL_n`. Własne nazwy mówią wprost „to nie jest SPI”.
 - Wspólne `shifter`/`watchdog` przenieść do `MODEL/COMMON/` (B5), a `watchdog` przemianować na `bit_counter` (F2).
-- Opcjonalnie zmienić nazwę repozytorium na GitHubie (Settings → Repository name). Stare URL-e przekierowują automatycznie.
+- Zmienić nazwę repozytorium na GitHubie: Settings → General → Repository name, np. `PiCoRe`. Stare URL-e przekierowują automatycznie, a lokalnie wystarczy `git remote set-url origin https://github.com/lyraei/PiCoRe`.
 
 ## Etap 1: solidne fundamenty (naprawy z README)
 

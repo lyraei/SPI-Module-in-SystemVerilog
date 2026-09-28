@@ -82,10 +82,10 @@ Projekt powstał jako magistrala z trzema slave'ami i trzema różnymi ALU, pisa
 - **Master ma parametr `SLAVES_NUMBER = 3`, nieużywany.** Wyjście SS zawsze było tylko jedno.
 - **„Multi-slave” był broadcastem.** Wszystkie trzy slave'y dzieliły jedno SS, słyszały każdą ramkę i każdy liczył każde polecenie swoim ALU. Wybór odbywał się multiplekserem MISO w testbenchu, więc multi-slave było tu tylko z nazwy.
 - **Skutek broadcastu:** pierwsza odpowiedź po przełączeniu slave'a była jego wynikiem dla ostatniego polecenia wysłanego do poprzedniego slave'a. Wektory jednostki 2 to przewidywały, a wektory jednostki 3 nie. Stąd jedyny błędny transfer w starej symulacji (2610/2611).
-- **Nazwy zostały po trzech jednostkach:** `SPI_EXE_UNIT_1`, `spi_exe_unit_1`, `spi_slave_1.ys`, `test_spi_exe_unit_1.vh`, instancja `exe1`.
+- **Nazwy zostały po trzech jednostkach:** moduł `spi_exe_unit_1`, plik `test_spi_exe_unit_1.vh`, instancja `exe1`. Katalogi i skrypty (dawniej `SPI_EXE_UNIT_1/`, `spi_slave_1.ys`) są już przemianowane na PiCoRe.
 - **Plik ALU nazywa się inaczej niż moduł:** `exe_unit_1_rtl.sv` zawiera moduł `exe_unit_rtl`. Ta sama nazwa modułu była też w jednostce 3, więc nie dało się ich skompilować razem.
 - **Każda netlista ALU pochodziła z innej wersji Yosysa** (0.10, 0.12, 0.13) i miała inne nazewnictwo, raz polskie (`zliczanie0`, `U1naU2`), raz angielskie (`zero_counter`, `sign_to_u2`). Projekt był więc ćwiczeniem z integracji cudzych bloków, a interfejs szeregowy był spoiwem.
-- **Interfejs nazywał się „SPI”, choć nim nie jest.** Pożyczył tylko nazwy linii i ogólny kształt: CPOL=0, MSB first, rejestry przesuwne. Przy 29 zboczach na 28 bitów, pustym pierwszym zboczu i MISO zmienianym na zboczu próbkowania żadne prawdziwe urządzenie SPI by się z nim nie dogadało. Stąd zmiana nazwy na **PiCoRe**. Identyfikatory w kodzie (`spi_master`, `SPI_MASTER/`, `spi_exe_unit_1`, `spi_slave_1.ys`, sygnały `spi_*` w testbenchu) i nazwa repozytorium to relikty sprzed tej zmiany.
+- **Interfejs nazywał się „SPI”, choć nim nie jest.** Pożyczył tylko nazwy linii i ogólny kształt: CPOL=0, MSB first, rejestry przesuwne. Przy 29 zboczach na 28 bitów, pustym pierwszym zboczu i MISO zmienianym na zboczu próbkowania żadne prawdziwe urządzenie SPI by się z nim nie dogadało. Stąd zmiana nazwy na **PiCoRe**. Pliki i katalogi przemianowano na PiCoRe, ale nazwy modułów w HDL (`spi_master`, `spi_exe_unit_1`), sygnały `spi_*` w testbenchu i plik `test_spi_exe_unit_1.vh` to relikty sprzed tej zmiany.
 
 ---
 

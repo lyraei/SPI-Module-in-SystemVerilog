@@ -3,9 +3,9 @@
 ## Flow
 
 ```
-MODEL/SPI_MASTER/*.sv    ──┐                         RTL/spi_master_rtl.sv
+MODEL/PICORE_MASTER/*.sv    ──┐                         RTL/picore_master_rtl.sv
                            ├─► Yosys (WORK/*.ys) ──►
-MODEL/SPI_EXE_UNIT_1/*.sv──┘                         RTL/spi_exe_unit_1_rtl.sv
+MODEL/PICORE_SLAVE/*.sv──┘                         RTL/picore_slave_rtl.sv
                                                                │
                                                                ▼
                          TEST/testbench.sv + TEST/*.vh ──► Icarus Verilog ──► wynik + WORK/waves.vcd
@@ -30,9 +30,9 @@ Plik: `WORK/makefile`. Wszystkie cele uruchamia się z katalogu `WORK/`.
 
 | Cel | Polecenia | Opis |
 |---|---|---|
-| `rtl` | `yosys -s spi_master.ys`, `yosys -s spi_slave_1.ys` | Synteza mastera i slave'a. Log każdego trafia do `WORK/<nazwa>.yosys.log` (`\|& tee`) |
-| `sim` | `iverilog -g2005-sv ../RTL/*.sv ../TEST/testbench.sv -o spi_test.iveri.run`, potem `./spi_test.iveri.run` | Kompilacja i uruchomienie symulacji. Zależy od `clear` |
-| `clear` | usuwa `spi_test.iveri.run` | Sprzątanie przed kompilacją |
+| `rtl` | `yosys -s picore_master.ys`, `yosys -s picore_slave.ys` | Synteza mastera i slave'a. Log każdego trafia do `WORK/<nazwa>.yosys.log` (`\|& tee`) |
+| `sim` | `iverilog -g2005-sv ../RTL/*.sv ../TEST/testbench.sv -o picore_test.iveri.run`, potem `./picore_test.iveri.run` | Kompilacja i uruchomienie symulacji. Zależy od `clear` |
+| `clear` | usuwa `picore_test.iveri.run` | Sprzątanie przed kompilacją |
 | `wave` | `gtkwave waves.vcd &` | Podgląd przebiegów |
 
 Zmienne: `SYNTH = yosys`, `RTL_FILES = ../RTL/*.sv`, `TB_FILES = ../TEST/testbench.sv`.
@@ -40,19 +40,19 @@ Zmienne: `SYNTH = yosys`, `RTL_FILES = ../RTL/*.sv`, `TB_FILES = ../TEST/testben
 Uwagi:
 
 - `sim` **nie zależy od** `rtl`. Na świeżym klonie trzeba najpierw wykonać `make rtl`.
-- `spi_slave_1.ys` zapisuje `../DOC/spi_exe_unit_1.json`, więc do syntezy potrzebny jest katalog `DOC/`.
-- `sim` kompiluje wszystko z `RTL/*.sv`. Stare netlisty `spi_exe_unit_2_rtl.sv`/`_3_rtl.sv` z wcześniejszej wersji projektu nie przeszkadzają, ale warto je usunąć.
+- `picore_slave.ys` zapisuje `../DOC/picore_slave.json`, więc do syntezy potrzebny jest katalog `DOC/`.
+- `sim` kompiluje wszystko z `RTL/*.sv`. **Stare netlisty `RTL/spi_*_rtl.sv` z poprzednich wersji trzeba usunąć**: `spi_master_rtl.sv` i `spi_exe_unit_1_rtl.sv` definiują te same moduły co `picore_*_rtl.sv`, więc wystąpi redeklaracja.
 
 ---
 
 ## Skrypty Yosysa (`*.ys`)
 
-Pliki: `WORK/spi_master.ys` i `WORK/spi_slave_1.ys`. Oba mają tę samą strukturę:
+Pliki: `WORK/picore_master.ys` i `WORK/picore_slave.ys`. Oba mają tę samą strukturę:
 
 | Krok | Polecenie | Co robi |
 |---|---|---|
 | 1 | `read_verilog -sv ../MODEL/<KATALOG>/*.sv` | Wczytuje pliki modułu (master wymienia je osobno, slave przez `*.sv`, łącznie z netlistą ALU) |
-| 1a | `prep -top spi_exe_unit_1` + `write_json ../DOC/spi_exe_unit_1.json` | **Tylko slave.** Eksport hierarchii do JSON (np. dla netlistsvg) |
+| 1a | `prep -top spi_exe_unit_1` + `write_json ../DOC/picore_slave.json` | **Tylko slave.** Eksport hierarchii do JSON (np. dla netlistsvg) |
 | 2 | `synth` | Generyczna synteza (bez `-top`, Yosys wybiera top sam) |
 | 3 | `abc -g AND,OR,XOR` | Mapowanie logiki kombinacyjnej na bramki AND/OR/XOR (+ NOT) |
 | 4 | `opt_clean` | Usunięcie nieużywanych przewodów |
@@ -60,7 +60,7 @@ Pliki: `WORK/spi_master.ys` i `WORK/spi_slave_1.ys`. Oba mają tę samą struktu
 | 6 | `copy X X_rtl`, `select *`, `select -del X_rtl`, `delete`, `select *` | „Zmiana nazwy” topu na `X_rtl` i usunięcie pozostałych modułów |
 | 7 | `write_verilog -noattr ../RTL/X_rtl.sv` | Zapis netlisty bez atrybutów |
 
-Wynik: w `RTL/` powstają `spi_master_rtl.sv` i `spi_exe_unit_1_rtl.sv`. Logika kombinacyjna jest zapisana jako `assign` z operatorami `&`, `|`, `^`, `~`, a przerzutniki jako bloki `always @(posedge …, negedge i_rst)`. Latche slave'a (komórki `$_DLATCH_`) są zapisane jako `always @*` z warunkiem `if`.
+Wynik: w `RTL/` powstają `picore_master_rtl.sv` i `picore_slave_rtl.sv`. Logika kombinacyjna jest zapisana jako `assign` z operatorami `&`, `|`, `^`, `~`, a przerzutniki jako bloki `always @(posedge …, negedge i_rst)`. Latche slave'a (komórki `$_DLATCH_`) są zapisane jako `always @*` z warunkiem `if`.
 
 Ostrzeżenia zgłaszane podczas syntezy (stan obecny):
 

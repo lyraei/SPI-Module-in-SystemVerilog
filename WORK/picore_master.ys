@@ -1,0 +1,19 @@
+
+read_verilog -sv ../MODEL/PICORE_MASTER/picore_master.sv
+read_verilog -sv ../MODEL/PICORE_MASTER/shifter.sv
+read_verilog -sv ../MODEL/PICORE_MASTER/watchdog.sv
+
+synth
+abc -g AND,OR,XOR
+opt_clean
+
+flatten 
+
+copy spi_master spi_master_rtl
+select *
+select -del spi_master_rtl
+delete
+select *
+
+write_verilog -noattr ../RTL/picore_master_rtl.sv
+

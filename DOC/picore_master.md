@@ -1,8 +1,8 @@
 # `spi_master`: master PiCoRe
 
-> Nazwa modułu (`spi_master`) i katalogu (`SPI_MASTER`) pochodzi sprzed zmiany nazwy projektu na PiCoRe.
+> Plik i katalog noszą nazwę PiCoRe, ale moduł w HDL nadal nazywa się `spi_master`. Ta nazwa pochodzi sprzed zmiany nazwy projektu.
 
-Plik: `MODEL/SPI_MASTER/spi_master.sv` (152 linie). Używa modułów `shifter` i `watchdog` z tego samego katalogu.
+Plik: `MODEL/PICORE_MASTER/picore_master.sv` (152 linie). Używa modułów `shifter` i `watchdog` z tego samego katalogu.
 
 ## Parametry
 

@@ -1,8 +1,8 @@
 # `spi_exe_unit_1`: slave PiCoRe z ALU
 
-> Nazwa modułu (`spi_exe_unit_1`) i katalogu (`SPI_EXE_UNIT_1`) pochodzi sprzed zmiany nazwy projektu na PiCoRe.
+> Plik i katalog noszą nazwę PiCoRe, ale moduł w HDL nadal nazywa się `spi_exe_unit_1`. Ta nazwa pochodzi sprzed zmiany nazwy projektu.
 
-Plik: `MODEL/SPI_EXE_UNIT_1/spi_exe_unit_1.sv` (171 linii). Katalog zawiera też netlistę ALU (`exe_unit_1_rtl.sv`) oraz własne kopie `shifter.sv` i `watchdog.sv`.
+Plik: `MODEL/PICORE_SLAVE/picore_slave.sv` (171 linii). Katalog zawiera też netlistę ALU (`exe_unit_1_rtl.sv`) oraz własne kopie `shifter.sv` i `watchdog.sv`.
 
 ## Parametry
 
@@ -128,7 +128,7 @@ Szczegóły: [exe_unit_alu.md](exe_unit_alu.md#flagi).
 ## Drobiazgi
 
 - Sygnał `result_enable` nie jest zadeklarowany (Yosys tworzy niejawny net i ostrzega). Jest ustawiany na `0` i nigdzie nie czytany.
-- Skrypt syntezy tego modułu jako jedyny eksportuje hierarchię do `DOC/spi_exe_unit_1.json` (`prep` + `write_json`).
+- Skrypt syntezy tego modułu jako jedyny eksportuje hierarchię do `DOC/picore_slave.json` (`prep` + `write_json`).
 
 ## Znane problemy
 

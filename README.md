@@ -6,7 +6,12 @@ Po drugiej stronie łącza siedzi jednostka wykonawcza (ALU, `exe_unit`). Slave 
 
 Pierwotnie projekt miał trzy slave'y z trzema różnymi ALU (od trzech autorów). Zostawiona jest tylko **jednostka 1**, a jednostki 2 i 3 zostały usunięte.
 
-Identyfikatory w kodzie (`spi_master`, `SPI_MASTER/`, `spi_exe_unit_1`, `spi_slave_1.ys`) oraz nazwa repozytorium pochodzą sprzed zmiany nazwy na PiCoRe. Ich przemianowanie to pierwszy krok w [roadmapie](DOC/roadmap.md).
+Pliki, katalogi i skrypty noszą już nazwy PiCoRe. Treść HDL pozostała bez zmian, więc po staremu nazywają się jeszcze:
+- moduły `spi_master` i `spi_exe_unit_1` (oraz ich netlisty `spi_master_rtl` i `spi_exe_unit_1_rtl`);
+- sygnały `spi_*` w testbenchu;
+- plik wektorów `TEST/test_spi_exe_unit_1.vh`, bo jego ścieżka jest wpisana w `testbench.sv`.
+
+Ich przemianowanie jest opisane w [roadmapie](DOC/roadmap.md), etap 0.
 
 **Pełna dokumentacja: [`DOC/`](DOC/README.md)**. Zawiera:
 - opis każdego pliku;
@@ -19,9 +24,9 @@ Identyfikatory w kodzie (`spi_master`, `SPI_MASTER/`, `spi_exe_unit_1`, `spi_sla
 
 | Ścieżka | Zawartość |
 |---|---|
-| `MODEL/SPI_MASTER/spi_master.sv` | Master PiCoRe: FSM `READY→SS→LOAD→LOW⇄HIGH→END`, SCLK = `i_clk`/2, ramka 28 bitów, MSB first |
-| `MODEL/SPI_EXE_UNIT_1/spi_exe_unit_1.sv` | Slave: FSM `READY→LOAD_A→LOAD_B→LOAD_OPER→STORE_RESULT` + ALU |
-| `MODEL/SPI_EXE_UNIT_1/exe_unit_1_rtl.sv` | Gotowa netlista ALU wygenerowana przez Yosysa (bez źródeł behawioralnych) |
+| `MODEL/PICORE_MASTER/picore_master.sv` | Master PiCoRe: FSM `READY→SS→LOAD→LOW⇄HIGH→END`, SCLK = `i_clk`/2, ramka 28 bitów, MSB first |
+| `MODEL/PICORE_SLAVE/picore_slave.sv` | Slave: FSM `READY→LOAD_A→LOAD_B→LOAD_OPER→STORE_RESULT` + ALU |
+| `MODEL/PICORE_SLAVE/exe_unit_1_rtl.sv` | Gotowa netlista ALU wygenerowana przez Yosysa (bez źródeł behawioralnych) |
 | `MODEL/*/shifter.sv` | Rejestr przesuwny z wpisem równoległym (2 identyczne kopie) |
 | `MODEL/*/watchdog.sv` | Przeładowywany licznik w dół z wyjściem `o_inter` (2 kopie) |
 | `WORK/*.ys`, `WORK/makefile` | Skrypty syntezy Yosysa i Makefile (`rtl`, `sim`, `wave`) |
@@ -64,7 +69,7 @@ make wave               # gtkwave waves.vcd
 
 Wymagane narzędzia: `yosys`, `iverilog` (sprawdzone na wersji 12), opcjonalnie `gtkwave`.
 
-Jeśli w `RTL/` zostały netlisty `spi_exe_unit_2_rtl.sv` / `spi_exe_unit_3_rtl.sv` z poprzedniej wersji projektu, usuń je. `make sim` kompiluje `RTL/*.sv`, więc stare pliki nie przeszkodzą w teście, ale będą zbędnie kompilowane.
+**Jeśli w lokalnym klonie `RTL/` zawiera pliki `spi_*_rtl.sv` z poprzedniej wersji projektu, usuń je** (`rm RTL/spi_*`). `make sim` kompiluje `RTL/*.sv`, a stare `spi_master_rtl.sv`/`spi_exe_unit_1_rtl.sv` definiują te same moduły co nowe `picore_*_rtl.sv`, więc Icarus zgłosi redeklarację.
 
 ## Stan weryfikacji (sprawdzone)
 
@@ -119,7 +124,7 @@ Jest to udokumentowane w `DOC/protokol_picore.md`, ale protokół tego nie sygna
 ## B. Build / skrypty
 
 **B1 [P0] Brakujący katalog `DOC/` wywala `make rtl`.**
-`spi_slave_1.ys` wykonuje `write_json ../DOC/spi_exe_unit_1.json`.
+`picore_slave.ys` wykonuje `write_json ../DOC/picore_slave.json`.
 - Naprawa: `mkdir -p ../DOC ../RTL` w Makefile albo usunąć `write_json`.
 - **Status:** obejście działa, bo katalog `DOC/` istnieje w repozytorium razem z dokumentacją.
 
@@ -135,10 +140,10 @@ Jest to udokumentowane w `DOC/protokol_picore.md`, ale protokół tego nie sygna
 **B4 [P2] Skrypty `.ys`:**
 - „zmiana nazwy” przez `copy`/`delete` zamienić na `rename X X_rtl`;
 - `flatten` po `synth`/`abc` zamienić na `synth -flatten -top X`;
-- `-top` jest podany tylko w `spi_slave_1.ys`.
+- `-top` jest podany tylko w `picore_slave.ys`.
 
 **B5 [P2] Zduplikowane moduły pomocnicze.**
-`shifter` i `watchdog` są zdefiniowane w `SPI_MASTER/` i `SPI_EXE_UNIT_1/`, więc `iverilog MODEL/*/*.sv` zgłasza redeklarację. Kolizje nazw ALU zniknęły razem z jednostkami 2 i 3.
+`shifter` i `watchdog` są zdefiniowane w `PICORE_MASTER/` i `PICORE_SLAVE/`, więc `iverilog MODEL/*/*.sv` zgłasza redeklarację. Kolizje nazw ALU zniknęły razem z jednostkami 2 i 3.
 - Naprawa: jedna kopia w `MODEL/COMMON/`.
 
 **B6 [P2] Brak źródeł behawioralnych ALU.**
@@ -171,9 +176,9 @@ Wektory pochodzą z tej samej netlisty ALU, więc test sprawdza transport PiCoRe
 **C6 [P2] Brak weryfikacji protokołu na poziomie przebiegów.**
 Brak asercji SVA oraz testów przerwanej ramki i resetu w trakcie transferu.
 
-## D. `spi_exe_unit_1.sv` (slave)
+## D. `picore_slave.sv` (slave)
 
-**D1 [P0/P1] `result_enable` niezadeklarowany** (`spi_exe_unit_1.sv:69`).
+**D1 [P0/P1] `result_enable` niezadeklarowany** (`picore_slave.sv:69`).
 Yosys tworzy niejawny net, a surowsze narzędzia zgłoszą błąd. Sygnał jest nieużywany.
 - Naprawa: usunąć go i dodać `` `default_nettype none ``.
 
@@ -197,7 +202,7 @@ Naprawa:
 
 **D6** — nieaktualne (trzy prawie identyczne wrappery).
 
-## E. `spi_master.sv`
+## E. `picore_master.sv`
 
 **E1 [P1]** Zobacz A4, A5, A6.
 
